@@ -44,3 +44,4 @@ console.log(plantUML == output);
 //true
 ```
 
+![Alt text](https://raw.githubusercontent.com/MaxWdeMon/solidity2plantuml/master/plantUML.svg?sanitize=true)
