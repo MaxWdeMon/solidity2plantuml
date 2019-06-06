@@ -31,7 +31,9 @@ abstract class test{
 	{abstract}#g(uint256[],uint256,testClass,testClass[])=>(testClass)
 }
 OtherContract <|-- test
-AnotherContract <|-- testabstract class testCon2{
+AnotherContract <|-- test
+
+abstract class testCon2{
 	+test T
 	-OtherContract[] x
 	{abstract}+f()
@@ -40,3 +42,5 @@ AnotherContract <|-- testabstract class testCon2{
 @enduml`;
 console.log(plantUML == output);
 //true
+```
+
