@@ -28,8 +28,13 @@ function extractFunctionsAndVariables (contract) {
 			result += extractFunction(par);
 		}
 	}
-	result = classInformation + "class " + contract.name + "{\n" + result + "}\n";
-	if (associations.length > 0) { result += Object.keys(associations).map(function (v) { return v + " o-- " + contract.name; }).reduce(function (t, v) { return t + "\n" + v; }) + "\n"; }
+	result = "\n" + classInformation + "class " + contract.name + "{\n" + result + "}\n";
+	if (Object.keys(associations).length > 0) { 
+		result += Object.keys(associations)
+		.map(function (v) { return v + " o-- " + contract.name; })
+		.reduce(function (t, v) { return t + "\n" + v; }) 
+		+ "\n";
+	}
 	return result;
 }
 function getVisibility (variable) {
