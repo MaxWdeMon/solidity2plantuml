@@ -1,0 +1,31 @@
+{
+  "name": "solidity2plantuml",
+  "version": "0.0.1",
+  "description": "Converts solidity code into a plantUML script, from which UML diagramms can be generated.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MaxWdeMon/solidity2plantuml.git"
+  },
+  "keywords": [
+    "Solidity",
+    "UML",
+    "plantUML",
+    "converter",
+    "2",
+    "diagramms",
+    "class"
+  ],
+  "author": "Maxwell's Demon",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/MaxWdeMon/solidity2plantuml/issues"
+  },
+  "homepage": "https://github.com/MaxWdeMon/solidity2plantuml#readme",
+  "dependencies": {
+    "solidity-parser-antlr": "^0.4.3"
+  }
+}
