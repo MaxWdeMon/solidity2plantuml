@@ -1,5 +1,5 @@
 # solidity2plantuml
-Converts solidity code into a plantUML script, from which UML diagramms can be generated.
+Converts solidity code into a plantUML script representing UML class diagramms.
 
 # Example
 
