@@ -2,7 +2,7 @@
 Converts solidity code into a plantUML script, from which UML diagramms can be generated.
 
 # Example
-```
+```javascript
 const solidity2plantuml = require("solidity2plantuml");
 var input = 
 `
