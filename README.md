@@ -26,6 +26,7 @@ var input =
 `;
 var plantUML = solidity2plantuml(input);
 var output = `@startuml
+
 abstract class test{
 	-uint256 a
 	+uint b
@@ -34,14 +35,16 @@ abstract class test{
 	+f()=>(uint256[],uint256,testClass,testClass[])
 	{abstract}#g(uint256[],uint256,testClass,testClass[])=>(testClass)
 }
+testClass o-- test
 OtherContract <|-- test
 AnotherContract <|-- test
-
 abstract class testCon2{
 	+test T
 	-OtherContract[] x
 	{abstract}+f()
 }
+test o-- testCon2
+OtherContract o-- testCon2
 
 @enduml`;
 console.log(plantUML == output);
