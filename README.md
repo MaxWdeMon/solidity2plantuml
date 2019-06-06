@@ -2,6 +2,10 @@
 Converts solidity code into a plantUML script, from which UML diagramms can be generated.
 
 # Example
+
+![Alt text](https://raw.githubusercontent.com/MaxWdeMon/solidity2plantuml/master/plantUML.svg?sanitize=true)
+
+
 ```javascript
 const solidity2plantuml = require("solidity2plantuml");
 var input = 
@@ -43,5 +47,3 @@ abstract class testCon2{
 console.log(plantUML == output);
 //true
 ```
-
-![Alt text](https://raw.githubusercontent.com/MaxWdeMon/solidity2plantuml/master/plantUML.svg?sanitize=true)
