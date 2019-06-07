@@ -117,7 +117,10 @@ function extractFunction (func) {
 		classInformation["abstract"] = "pre";
 		output += "{abstract}";
 	}
-	var funcName = (func.name=="")?"{static}fallback":func.name;
+	if(func.stateMutability == "payable"){
+		output += "{static}";
+	}
+	var funcName = (func.name==""||func.name==null)?"{static}fallback":func.name;
 	output += getVisibility(func) + funcName;
 	output += parseFunctionParameters(func.parameters.parameters);
 	if (func.returnParameters != null) { output += "=>" + parseFunctionParameters(func.returnParameters.parameters); }
