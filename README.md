@@ -88,11 +88,11 @@ function readDirectory(path){
 			if(dir[f].slice(0,1) != ".")
 				readDirectory(path + "/" + dir[f]);
 		}
-	}else{
+	}else if(path.endsWith(".sol")){
+		// var p = path.replace("/Volumes/Test/openzeppelin-solidity/contracts/","");
 		var file = fs.readFileSync(path, "utf8");
-        var p = path.replace("/Volumes/Test/openzeppelin-solidity/contracts/","");
-        console.log(solidity2plantuml(file,"","")); 
-        // future version should display files as packages e.g.: , "package " + p + "{\n", "\n}" ));
+		console.log(solidity2plantuml(file,"","")); 
+		// future version should display files as packages e.g.: , "package " + p + "{\n", "\n}" ));
 	}
 }
 ```
