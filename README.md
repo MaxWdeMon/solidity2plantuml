@@ -73,7 +73,9 @@ console.log(solidity2plantuml(simpleInput, "", "") == simpleOutput);
 //true
 //true
 ```
-#Creating diagrams from folders
+
+# Creating diagrams from folders
+
 The below code takes a folder and generates a class diagram with all files contained in the folder:
 ```javascript
 
