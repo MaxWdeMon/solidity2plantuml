@@ -4,7 +4,8 @@ const parse = require("solidity-parser-antlr");
 
 let associations = {};
 let inheritance = [];
-let classInformation = "";
+let structs = [];
+let classInformation = {};
 function extractBaseContracts (contract) {
 	if (contract.type !== "ContractDefinition") { throw new Error("trying to parse something that is not a contract, but rather type: " + typeof contract); }
 	if (contract.baseContracts.length < 1) {
@@ -20,18 +21,45 @@ function extractBaseContracts (contract) {
 function extractFunctionsAndVariables (contract) {
 	associations = [];
 	inheritance = [];
-	classInformation = "";
+	structs = [];
+	classInformation = {};
 	if (contract.type !== "ContractDefinition") { throw new Error("trying to parse something that is not a contract, but rather type: " + typeof contract); }
 	var result = "";
 	for (var par of contract.subNodes) {
-		if (par.type === "StateVariableDeclaration") { result += extractVariable(par.variables[0]); } else if (par.type === "FunctionDefinition") {
+		if (par.type === "StateVariableDeclaration") { 
+			result += extractVariable(par.variables[0]); 
+		} else if (par.type === "FunctionDefinition") {
 			result += extractFunction(par);
+		} else if (par.type ==="UsingForDeclaration"){
+			associations[par.libraryName] = "\"using\" +.. \"for " + getType(par.typeName) + "\"";
+		} else if (par.type === "StructDefinition") {
+			var newStruct = "class "+par.name+"<<(S, lightyellow) struct>>{\n";
+			for(var m in par.members){
+			 	newStruct += extractVariable(par.members[m]);
+			}
+			newStruct += "}\n"
+			structs.push(newStruct);
 		}
 	}
-	result = "\n" + classInformation + "class " + contract.name + "{\n" + result + "}\n";
+	if(contract.kind == "library"){
+		classInformation["<<(L,lightblue) Lib>>"] = "post";
+	}
+	var cipre = "";
+	var cipost = "";
+	if(Object.keys(classInformation).length > 0) {
+		cipre = Object.entries(classInformation)
+		.map(function (p) { 
+			return p[1]=="pre"?(p[0]+" "):""; })
+		.reduce(function (t, v) { return t + (v==""?"":v); }); 
+		cipost = Object.entries(classInformation)
+		.map(function (p) { 
+			return p[1]=="post"?p[0]:""; })
+		.reduce(function (t, v) { return t + (v==""?"":v); }); 
+	}
+	result = "\n" + cipre + "class " + contract.name + cipost + " {\n" + result + "}\n";
 	if (Object.keys(associations).length > 0) { 
-		result += Object.keys(associations)
-		.map(function (v) { return v + " o-- " + contract.name; })
+		result += Object.entries(associations)
+		.map(function (v) { return v[0] + " "+v[1]+" " + contract.name; })
 		.reduce(function (t, v) { return t + "\n" + v; }) 
 		+ "\n";
 	}
@@ -49,7 +77,10 @@ function getVisibility (variable) {
 		return "#";
 	case "default":
 		return "";
+	default:
+		return "";
 	}
+	
 }
 function getType (variableTypeName) {
 	switch (variableTypeName.type) {
@@ -83,26 +114,31 @@ function parseFunctionParameters (parameters) {
 function extractFunction (func) {
 	var output = "\t";
 	if (func.body === null) {
-		classInformation = "abstract " + classInformation;
+		classInformation["abstract"] = "pre";
 		output += "{abstract}";
 	}
-	output += getVisibility(func) + func.name;
+	var funcName = (func.name=="")?"{static}fallback":func.name;
+	output += getVisibility(func) + funcName;
 	output += parseFunctionParameters(func.parameters.parameters);
 	if (func.returnParameters != null) { output += "=>" + parseFunctionParameters(func.returnParameters.parameters); }
 	return output + "\n";
 }
 
-module.exports = function solidity2plantuml (input) {
-	var result = "@startuml\n";
+function solidity2plantuml(input, startDecorator = "@startuml\n", endDecorator = "\n@enduml") {
+	var result = startDecorator;
 	try {
 		var parsed = parse.parse(input);
 		for (var c of parsed.children) {
 			if (c.type === "ContractDefinition") {
 				result += extractFunctionsAndVariables(c);
+				if(structs.length>0){
+					result += structs.reduce(function(t, v){ return t + v; });
+				}
 				result += extractBaseContracts(c);
+				
 			}
 		}
-		return result + "\n@enduml";
+		return result + endDecorator;
 	} catch (e) {
 		if (e instanceof parse.ParserError) {
 			// eslint-disable-next-line no-console
@@ -110,3 +146,5 @@ module.exports = function solidity2plantuml (input) {
 		}
 	}
 }
+
+module.exports = solidity2plantuml;
