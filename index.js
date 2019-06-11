@@ -34,9 +34,9 @@ function extractFunctionsAndVariables (contract) {
 		} else if (par.type === "StructDefinition") {
 			var newStruct = "class "+par.name+"<<(S, lightyellow) struct>>{\n";
 			for(var m in par.members){
-			 	newStruct += extractVariable(par.members[m]);
+				newStruct += extractVariable(par.members[m]);
 			}
-			newStruct += "}\n"
+			newStruct += "}\n";
 			structs.push(newStruct);
 		}
 	}
@@ -47,19 +47,19 @@ function extractFunctionsAndVariables (contract) {
 	var cipost = "";
 	if(Object.keys(classInformation).length > 0) {
 		cipre = Object.entries(classInformation)
-		.map(function (p) { 
-			return p[1]=="pre"?(p[0]+" "):""; })
-		.reduce(function (t, v) { return t + (v==""?"":v); }); 
+			.map(function (p) { 
+				return p[1]=="pre"?(p[0]+" "):""; })
+			.reduce(function (t, v) { return t + (v==""?"":v); }); 
 		cipost = Object.entries(classInformation)
-		.map(function (p) { 
-			return p[1]=="post"?p[0]:""; })
-		.reduce(function (t, v) { return t + (v==""?"":v); }); 
+			.map(function (p) { 
+				return p[1]=="post"?p[0]:""; })
+			.reduce(function (t, v) { return t + (v==""?"":v); }); 
 	}
 	result = "\n" + cipre + "class " + contract.name + cipost + " {\n" + result + "}\n";
 	if (Object.keys(associations).length > 0) { 
 		result += Object.entries(associations)
-		.map(function (v) { return v[0] + " "+v[1]+" " + contract.name; })
-		.reduce(function (t, v) { return t + "\n" + v; }) 
+			.map(function (v) { return v[0] + " "+v[1]+" " + contract.name; })
+			.reduce(function (t, v) { return t + "\n" + v; }) 
 		+ "\n";
 	}
 	return result;

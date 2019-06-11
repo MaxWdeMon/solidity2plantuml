@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 const fs = require("fs");
 const solidity2plantuml = require("./index.js");
 
@@ -14,10 +14,11 @@ function sol2umlFolder(path = ".", showFilenameAsPackage = false ){
 		}
 	}else if(path.endsWith(".sol")){
 		// var p = path.replace("/Volumes/DOCS/deveth/2Solidity/oz/openzeppelin-solidity/contracts/","");
-		var startDecorator = showFilenameAsPackage?`package ${filename} {
+		var startDecorator = showFilenameAsPackage?`package ${path} {
 			`:"";
 		var endDecorator = showFilenameAsPackage?"\n}":"";
 		var file = fs.readFileSync(path, "utf8");
+		// eslint-disable-next-line no-console
 		console.log(solidity2plantuml(file, startDecorator, endDecorator)); 
 		// future version should display files as packages e.g.: solidity2plantuml(file, "", "\n}" ));
 	}
@@ -33,14 +34,17 @@ function sol2umlCLI(){
 		sol2umlFolder();
 	}else if(process.argv.length == 3){
 		if(process.argv[2].endsWith("help")||process.argv[2] == "-h"){
+			// eslint-disable-next-line no-console
 			console.log("node sol2umlCLI [/path/to/folder/containing/somefiles.sol]");
 		}else{
 			sol2umlFolder(process.argv[2]);
 		}
 	}else if(process.argv.length == 4){
-;
+		// eslint-disable-next-line no-extra-semi
+		; //add functionality to create packages for each file
 	}
 }
+
 sol2umlCLI();
 
 module.exports = {sol2umlFolder: sol2umlFolder, sol2umlCLI: sol2umlCLI};
