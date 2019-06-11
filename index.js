@@ -1,7 +1,6 @@
 // import { parse, ParserError } from "solidity-parser-antlr"
 const parse = require("solidity-parser-antlr");
 
-
 let associations = {};
 let inheritance = [];
 let structs = [];
