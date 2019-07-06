@@ -1,6 +1,6 @@
 {
   "_from": "solidity2plantuml",
-  "_id": "solidity2plantuml@0.0.1",
+  "_id": "solidity2plantuml@0.1.0",
   "_inBundle": false,
   "_integrity": "sha512-jZjfyhwX4uoYRvjDWE9hEgJ3/t967xkHzEzbn/OONdtn+78rzGm5+ouwfJhchUgUIuUhkYDIt5NxvE5hy0GJyw==",
   "_location": "/solidity2plantuml",
@@ -55,5 +55,5 @@
   "scripts": {
     "test": "mocha"
   },
-  "version": "0.0.2"
+  "version": "0.1.0"
 }
