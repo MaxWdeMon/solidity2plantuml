@@ -1,4 +1,3 @@
-// import { parse, ParserError } from "solidity-parser-antlr"
 const parse = require("solidity-parser-antlr");
 class ClassDesc{
 	constructor(){
@@ -240,5 +239,3 @@ importSolidity(input, packageName) { //, startDecorator = "@startuml\n", endDeco
  }
 }
 module.exports = {ClassDesc: ClassDesc, Sol2UML: Sol2UML};
-//solidity2plantumlObj: solidity2plantumlObj, 
-	// printPlantUML : printPlantUML,

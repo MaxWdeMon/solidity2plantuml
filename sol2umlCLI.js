@@ -3,8 +3,6 @@ const fs = require("fs");
 const solidity2plantuml = require("./index.js");
 
 
-
-
 function sol2umlFolder(path = ".", showFilenameAsPackage = false, sol2uml ){
 	if(fs.statSync(path).isDirectory()){
 		var dir = fs.readdirSync(path);
@@ -34,6 +32,10 @@ function sol2umlInheritance(path = ".", showFilenameAsPackage = false, sol2uml )
 			}
 		}
 	}
+	else
+	{
+		sol2umlFolder(path,showFilenameAsPackage, sol2uml);
+	}
 }
 
 
@@ -46,8 +48,8 @@ function sol2umlCLI(){
 		if(process.argv[2].endsWith("help")||process.argv[2] == "-h"){
 			// eslint-disable-next-line no-console
 			console.log("node sol2umlCLI [/path/to/somefile.sol]");
-			console.log("node sol2umlCLI [/path/to/folder/containing/somefiles.sol]");
-			console.log("If you provide a file as an argument the converter will trace all import directives. If you provide a folder all files in the folder will be processed.")
+			console.log("node sol2umlCLI [/path/to/folder/containing/solidityfiles]");
+			console.log("If you provide a file as an argument the converter will trace all import directives. \nIf you provide a folder all files in the folder will be processed.")
 		}else{
 			var s2u = new solidity2plantuml.Sol2UML();
 			sol2umlInheritance(process.argv[2], true, s2u);
@@ -61,4 +63,4 @@ function sol2umlCLI(){
 
 sol2umlCLI();
 
-module.exports = {sol2umlFolder: sol2umlFolder, sol2umlCLI: sol2umlCLI};
+module.exports = {sol2umlFolder: sol2umlFolder, sol2umlInheritance: sol2umlInheritance};
