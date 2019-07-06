@@ -1,71 +1,112 @@
-// import { parse, ParserError } from "solidity-parser-antlr"
 const parse = require("solidity-parser-antlr");
+class ClassDesc{
+	constructor(){
+		this.fullPath = "";
+		this.package = "";
+		this.pre = "";
+		this.post = "";
+		this.name = "";
+		this.parameters = [""];
+		this.functions = [""];
+		this.associations = {};
+	}
+	toString(){
+		var result =`
+	${this.pre} ${this.name} ${this.post} {\t${this.parameters.reduce(function (t, v) { return t + "\n\t" + (v==""?"":v); })}    \t${this.functions.reduce(function (t, v) { return t + "\n\t" + (v==""?"":v); })}
+	}`;
+		if(this.package != ""){
+			result = `package ${this.package} {${result}\n}`
+		}
+		return result;
+	}
+}
+class Sol2UML{
+	constructor(){
+		this.uml  = {
+			inheritance: [],
+			classDescs: {}
+		}
+		this.currentClass = new ClassDesc();
+		this.importDirectives = {};
+	}
+
+// function populateTemplate(classDesc){
+//     var result =`
+// ${classDesc.pre} ${classDesc.name} ${classDesc.post} {\t${classDesc.parameters.reduce(function (t, v) { return t + "\n\t" + (v==""?"":v); })}    \t${classDesc.functions.reduce(function (t, v) { return t + "\n\t" + (v==""?"":v); })}
+// }`;
+//     if(classDesc.package != ""){
+//         result = `package ${classDesc.package} {${result}\n}`
+//     }
+//     return result;
+// }
+    toString(){
+	var r  = "";
+	
+	var cds = Object.values(this.uml.classDescs);
+
+	for(var c of cds){
+		r += c.toString() + "\n";
+	}
+	for(var i of this.uml.inheritance){
+		r += i + "\n";
+	}
+	for(var cd of cds){
+		if(Object.keys(cd.associations).length > 0) { 
+			for(var a of Object.entries(cd.associations)){
+				r += a[0] +" " + a[1] + "\n";
+			}
+		}
+	}
+	return r;
+	}
 
 
-let associations = {};
-let inheritance = [];
-let structs = [];
-let classInformation = {};
-function extractBaseContracts (contract) {
+extractBaseContracts (contract) {
 	if (contract.type !== "ContractDefinition") { throw new Error("trying to parse something that is not a contract, but rather type: " + typeof contract); }
 	if (contract.baseContracts.length < 1) {
 		return "";
 	}
 	var name = contract.name;
 	for (var baseC of contract.baseContracts) {
-		inheritance.push(baseC.baseName.namePath + " <|-- " + name);
+		this.uml.inheritance.push(baseC.baseName.namePath + " <|-- " + name);
 	}
-	return inheritance.reduce(function (t, v) { return t + "\n" + v; });
+	// return "check uml.inheritance"; //uml.inheritance.reduce(function (t, v) { return t + "\n" + v; });
 }
 
-function extractFunctionsAndVariables (contract) {
-	associations = [];
-	inheritance = [];
-	structs = [];
-	classInformation = {};
+extractFunctionsAndVariables (contract, packageName = "") {
+	this.currentClass = new ClassDesc(); //JSON.parse(classDescTemplate);
+	this.currentClass.pre = "class ";
+	this.currentClass.package = packageName;
+	this.currentClass.name = contract.name;
 	if (contract.type !== "ContractDefinition") { throw new Error("trying to parse something that is not a contract, but rather type: " + typeof contract); }
-	var result = "";
 	for (var par of contract.subNodes) {
 		if (par.type === "StateVariableDeclaration") { 
-			result += extractVariable(par.variables[0]); 
+			this.currentClass.parameters.push(this.extractVariable(par.variables[0])); 
 		} else if (par.type === "FunctionDefinition") {
-			result += extractFunction(par);
+			this.currentClass.functions.push(this.extractFunction(par));
 		} else if (par.type ==="UsingForDeclaration"){
-			associations[par.libraryName] = "\"using\" +.. \"for " + getType(par.typeName) + "\"";
+			this.currentClass.associations[par.libraryName] = "\"using\" ..+ \"for e.g." + this.getType(par.typeName) + "\" " + contract.name;	
 		} else if (par.type === "StructDefinition") {
-			var newStruct = "class "+par.name+"<<(S, lightyellow) struct>>{\n";
+			var newStruct = new ClassDesc();
+			newStruct.pre = "class ";
+			newStruct.name = par.name;
+			newStruct.package = packageName;
+			newStruct.post = " <<(S, lightyellow) struct>>";
 			for(var m in par.members){
-			 	newStruct += extractVariable(par.members[m]);
+				newStruct.parameters.push(this.extractVariable(par.members[m]));
 			}
-			newStruct += "}\n"
-			structs.push(newStruct);
+			newStruct.associations[this.currentClass.name] = " --* " + par.name;
+			this.uml.classDescs[this.currentClass.fullPath + "#" + newStruct.name] = newStruct;
 		}
 	}
 	if(contract.kind == "library"){
-		classInformation["<<(L,lightblue) Lib>>"] = "post";
+		this.currentClass.post += " <<(L,lightblue) Lib>>"; 
 	}
-	var cipre = "";
-	var cipost = "";
-	if(Object.keys(classInformation).length > 0) {
-		cipre = Object.entries(classInformation)
-		.map(function (p) { 
-			return p[1]=="pre"?(p[0]+" "):""; })
-		.reduce(function (t, v) { return t + (v==""?"":v); }); 
-		cipost = Object.entries(classInformation)
-		.map(function (p) { 
-			return p[1]=="post"?p[0]:""; })
-		.reduce(function (t, v) { return t + (v==""?"":v); }); 
-	}
-	result = "\n" + cipre + "class " + contract.name + cipost + " {\n" + result + "}\n";
-	if (Object.keys(associations).length > 0) { 
-		result += Object.entries(associations)
-		.map(function (v) { return v[0] + " "+v[1]+" " + contract.name; })
-		.reduce(function (t, v) { return t + "\n" + v; }) 
-		+ "\n";
-	}
-	return result;
+
+	this.uml.classDescs[this.currentClass.fullPath + "#" + this.currentClass.name] = this.currentClass;
+	return this.currentClass;
 }
-function getVisibility (variable) {
+static getVisibility (variable) {
 	switch (variable.visibility) {
 	case "public":
 		return "+";
@@ -82,72 +123,119 @@ function getVisibility (variable) {
 	}
 	
 }
-function getType (variableTypeName) {
+getType(variableTypeName) {
 	switch (variableTypeName.type) {
 	case "ArrayTypeName":
-		return getType(variableTypeName.baseTypeName) + "[]";
+		return this.getType(variableTypeName.baseTypeName) + "[]";
 	case "UserDefinedTypeName":
-		associations[variableTypeName.namePath] = "o--";
+		this.currentClass.associations[variableTypeName.namePath] = " --o " + this.currentClass.name;
 		return variableTypeName.namePath;
 	case "ElementaryTypeName":
 		return variableTypeName.name;
 	case "Mapping":
-		return getType(variableTypeName.keyType) + "->" + getType(variableTypeName.valueType);
+		return this.getType(variableTypeName.keyType) + "->" + this.getType(variableTypeName.valueType);
 	}
 }
-function extractVariable (variable) {
+extractVariable (variable) {
 	var varString = "\t";
-	varString += getVisibility(variable);
-	varString += getType(variable.typeName);
+	varString += Sol2UML.getVisibility(variable);
+	varString += this.getType(variable.typeName);
 	varString += " " + variable.name;
-	return varString + "\n";
+	return varString;
 }
-function parseFunctionParameters (parameters) {
+parseFunctionParameters (parameters) {
 	var output = "(";
 	for (var p of parameters) {
-		output += getType(p.typeName) + ",";
+		output += this.getType(p.typeName) + ",";
 	}
 	if (parameters.length > 0) { output = output.slice(0, output.lastIndexOf()); }
 	return output + ")";
 }
 
-function extractFunction (func) {
+extractFunction (func) {
 	var output = "\t";
 	if (func.body === null) {
-		classInformation["abstract"] = "pre";
+		//classInformation["abstract"] = "pre";
+		//"<<(L,lightblue) Lib>>"
+		this.currentClass.pre = "abstract ";
 		output += "{abstract}";
 	}
 	if(func.stateMutability == "payable"){
 		output += "{static}";
 	}
 	var funcName = (func.name==""||func.name==null)?"{static}fallback":func.name;
-	output += getVisibility(func) + funcName;
-	output += parseFunctionParameters(func.parameters.parameters);
-	if (func.returnParameters != null) { output += "=>" + parseFunctionParameters(func.returnParameters.parameters); }
-	return output + "\n";
+	output += Sol2UML.getVisibility(func) + funcName;
+	output += this.parseFunctionParameters(func.parameters.parameters);
+	if (func.returnParameters != null) { output += "=>" + this.parseFunctionParameters(func.returnParameters.parameters); }
+	return output;
 }
 
-function solidity2plantuml(input, startDecorator = "@startuml\n", endDecorator = "\n@enduml") {
-	var result = startDecorator;
+parseContract(c, packageName){
+	this.extractBaseContracts(c);
+	this.extractFunctionsAndVariables(c, packageName);
+}
+
+convertToAbsolutePath(base, relative){
+	if(relative.startsWith("http")){
+		return relative;
+	}
+	var pathElements = base.split("/");
+	var folderLevel = pathElements.length - 1;
+	var _relative = relative;
+	while(_relative.startsWith("../")){
+		_relative = _relative.slice(3);
+		folderLevel--;
+	}
+	if(_relative.startsWith("./")){
+		_relative = _relative.slice(2);
+	}
+	var path = "/";
+
+	for(var i = 0; i < folderLevel;i++){
+		path += pathElements[i] + "/";
+	}
+	path += _relative;
+	for(var j = 0; j<5;j++){
+		path = path.replace("//","/");
+	}
+	return path;
+}
+
+collectImportDirectives(input, basePath = "."){
+	var importDirectives = {};
+	var importDirectivesAbsolute = {};
 	try {
 		var parsed = parse.parse(input);
 		for (var c of parsed.children) {
-			if (c.type === "ContractDefinition") {
-				result += extractFunctionsAndVariables(c);
-				if(structs.length>0){
-					result += structs.reduce(function(t, v){ return t + v; });
-				}
-				result += extractBaseContracts(c);
-				
+			if(c.type === "ImportDirective") {
+				importDirectives[c.path] = basePath;
+				var absolutePath = this.convertToAbsolutePath( basePath, c.path);
+				importDirectivesAbsolute[absolutePath]=1;
+					
 			}
 		}
-		return result + endDecorator;
-	} catch (e) {
+		return importDirectivesAbsolute;
+	}catch (e) {
 		if (e instanceof parse.ParserError) {
 			// eslint-disable-next-line no-console
 			console.log(e.errors);
 		}
 	}
 }
-
-module.exports = solidity2plantuml;
+importSolidity(input, packageName) { //, startDecorator = "@startuml\n", endDecorator = "\n@enduml"
+	try {
+		var parsed = parse.parse(input);
+		for (var c of parsed.children) {
+			if (c.type === "ContractDefinition") {
+				this.parseContract(c, packageName);
+			}
+		}
+	} catch (e) {
+		if (e instanceof parse.ParserError) {
+			// eslint-disable-next-line no-console
+			console.log(e.errors);
+		}
+	}
+ }
+}
+module.exports = {ClassDesc: ClassDesc, Sol2UML: Sol2UML};
