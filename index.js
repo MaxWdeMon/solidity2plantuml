@@ -60,16 +60,8 @@ class Sol2UML{
 	return r;
 	}
 
-<<<<<<< HEAD
 
 extractBaseContracts (contract) {
-=======
-let associations = {};
-let inheritance = [];
-let structs = [];
-let classInformation = {};
-function extractBaseContracts (contract) {
->>>>>>> 67b6e1d0f208c730ff0ae6936b7383060f977a54
 	if (contract.type !== "ContractDefinition") { throw new Error("trying to parse something that is not a contract, but rather type: " + typeof contract); }
 	if (contract.baseContracts.length < 1) {
 		return "";
@@ -101,7 +93,6 @@ extractFunctionsAndVariables (contract, packageName = "") {
 			newStruct.package = packageName;
 			newStruct.post = " <<(S, lightyellow) struct>>";
 			for(var m in par.members){
-<<<<<<< HEAD
 				newStruct.parameters.push(this.extractVariable(par.members[m]));
 			}
 			newStruct.associations[this.currentClass.name] = " --* " + par.name;
@@ -114,37 +105,6 @@ extractFunctionsAndVariables (contract, packageName = "") {
 
 	this.uml.classDescs[this.currentClass.fullPath + "#" + this.currentClass.name] = this.currentClass;
 	return this.currentClass;
-=======
-				newStruct += extractVariable(par.members[m]);
-			}
-			newStruct += "}\n";
-			structs.push(newStruct);
-		}
-	}
-	if(contract.kind == "library"){
-		classInformation["<<(L,lightblue) Lib>>"] = "post";
-	}
-	var cipre = "";
-	var cipost = "";
-	if(Object.keys(classInformation).length > 0) {
-		cipre = Object.entries(classInformation)
-			.map(function (p) { 
-				return p[1]=="pre"?(p[0]+" "):""; })
-			.reduce(function (t, v) { return t + (v==""?"":v); }); 
-		cipost = Object.entries(classInformation)
-			.map(function (p) { 
-				return p[1]=="post"?p[0]:""; })
-			.reduce(function (t, v) { return t + (v==""?"":v); }); 
-	}
-	result = "\n" + cipre + "class " + contract.name + cipost + " {\n" + result + "}\n";
-	if (Object.keys(associations).length > 0) { 
-		result += Object.entries(associations)
-			.map(function (v) { return v[0] + " "+v[1]+" " + contract.name; })
-			.reduce(function (t, v) { return t + "\n" + v; }) 
-		+ "\n";
-	}
-	return result;
->>>>>>> 67b6e1d0f208c730ff0ae6936b7383060f977a54
 }
 static getVisibility (variable) {
 	switch (variable.visibility) {
