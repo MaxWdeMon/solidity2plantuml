@@ -55,5 +55,8 @@
   "scripts": {
     "test": "mocha"
   },
+  "bin":{
+    "sol2uml": "./cli.js"
+  },
   "version": "0.1.0"
 }
