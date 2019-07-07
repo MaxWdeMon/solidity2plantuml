@@ -8,16 +8,16 @@ Converts solidity code into a plantUML script representing UML class diagramms.
 # Usage
 
 ```sh
-node sol2umlCLI [/path/to/somefile.sol]
+node sol2uml [/path/to/somefile.sol]
 ```
 or
 ```sh
-node sol2umlCLI [/path/to/folder/containing/solidityfiles]
+node sol2uml [/path/to/folder/containing/solidityfiles]
 ```
 If you provide a file as an argument the converter will trace all import directives.
 If you provide a folder all files in the folder will be processed.
 
 # Code Embedding
 
-Please take a look at the ```sol2umlCLI.js``` file if you want to embed this into yor code. 
+Please take a look at the ```cli.js``` file if you want to embed this into yor code. 
 You can either trace the Import Directives or the Folder Structure.
