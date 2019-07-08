@@ -2,41 +2,50 @@
 "use strict";
 const fs = require("fs");
 const solidity2plantuml = require("./sol2uml.js");
+const sep = require("path").sep;
+function makePathAbsolute(path){
+	if(path.startsWith("." + sep)){
+		path = process.cwd() + path.slice(1);
+	}else if (path == "."){
+		path = process.cwd();
+	}else if (!path.startsWith(sep)){
+		path = process.cwd() + sep + path;
+	}
+	return path;
+}
 
-
-function sol2umlFolder(path = ".", showFilenameAsPackage = false, sol2uml ){
+function sol2umlFolder(sol2umlObj, path = ".", showFilenameAsPackage = false){
+	path = makePathAbsolute(path);
 	if(fs.statSync(path).isDirectory()){
 		var dir = fs.readdirSync(path);
 		for(var f in dir){
-			if(dir[f].slice(0,1) != "."){
-				console.log(dir[f]);
-			}
-			sol2umlFolder(path + "/" + dir[f], showFilenameAsPackage, sol2uml);
+			sol2umlFolder(sol2umlObj, path + sep + dir[f], showFilenameAsPackage);
 		}
 	}else if(path.endsWith(".sol")){
-		var p = showFilenameAsPackage?path.split("/").pop():"";
+		var p = showFilenameAsPackage?path.split(sep).pop():"";
 		var file = fs.readFileSync(path, "utf8");
-		sol2uml.importSolidity(file, p);
+		sol2umlObj.importSolidity(file, p);
 	}
 }
 
-function sol2umlInheritance(path = ".", showFilenameAsPackage = false, sol2uml ){
+function sol2umlInheritance(sol2umlObj, path = ".", showFilenameAsPackage = false ){
+	path = makePathAbsolute(path);
 	if(path.endsWith(".sol")){
-		var packageName = showFilenameAsPackage?path.split("/").pop():"";
+		var packageName = showFilenameAsPackage?path.split(sep).pop():"";
 		var file = fs.readFileSync(path, "utf8");
 		// eslint-disable-next-line no-console
-		sol2uml.importSolidity(file, packageName);
-		var importDirectives = sol2uml.collectImportDirectives(file, path);
+		sol2umlObj.importSolidity(file, packageName);
+		var importDirectives = sol2umlObj.collectImportDirectives(file, path);
 		var importDirectivesIter = Object.keys(importDirectives);
 		for(var i in importDirectivesIter){
 			if(!importDirectivesIter[i].startsWith("http")){
-				sol2umlInheritance(importDirectivesIter[i], showFilenameAsPackage, sol2uml);
+				sol2umlInheritance(sol2umlObj, importDirectivesIter[i], showFilenameAsPackage);
 			}
 		}
 	}
 	else
 	{
-		sol2umlFolder(path,showFilenameAsPackage, sol2uml);
+		sol2umlFolder(sol2umlObj, path,showFilenameAsPackage);
 	}
 }
 

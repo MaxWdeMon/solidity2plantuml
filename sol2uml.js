@@ -94,7 +94,7 @@ class Sol2UML{
 				for(var m in par.members){
 					newStruct.parameters.push(this.extractVariable(par.members[m]));
 				}
-				newStruct.associations[this.currentClass.name] = " --* " + par.name;
+				newStruct.associations[this.currentClass.name] = " *-- " + par.name;
 				this.uml.classDescs[this.currentClass.fullPath + "#" + newStruct.name] = newStruct;
 			}
 		}
